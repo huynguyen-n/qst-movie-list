@@ -70,6 +70,34 @@ public final class Store: @unchecked Sendable, Identifiable {
     }
 }
 
+// MARK: - Store (Storing Movie)
+extension Store {
+    /// Stores the given movie
+    public func storeMovie(id: String, title: String, descriptions: String, rating: Double, duration: Int, genre: [String], releaseDate: Date, trailerURL: String) {
+        handle(.movieStored(.init(
+            id: id,
+            title: title,
+            descriptions: descriptions,
+            rating: rating,
+            duration: duration,
+            genre: genre,
+            releaseDate: Date(),
+            trailerURL: trailerURL)))
+    }
+
+    /// Handles event created by the current store and dispatches it to observers.
+    func handle(_ event: Event) {
+        perform { _ in
+            self._handle(event)
+        }
+    }
+
+    /// Handles event emitted by the external store.
+    func handleExternalEvent(_ event: Event) {
+        perform { _ in self._handle(event) }
+    }
+}
+
 // MARK: - Private Extension
 private extension Store {
     static func makeContainer(databaseURL: URL) -> NSPersistentContainer {
@@ -78,6 +106,60 @@ private extension Store {
         store.setValue("DELETE" as NSString, forPragmaNamed: "journal_mode")
         container.persistentStoreDescriptions = [store]
         return container
+    }
+
+    // MARK: Performing Changes
+
+    private func perform(_ changes: @escaping (NSManagedObjectContext) -> Void) {
+        backgroundContext.perform {
+            changes(self.backgroundContext)
+            self.setNeedsSave()
+        }
+    }
+
+    private func setNeedsSave() {
+        guard !isSaveScheduled else { return }
+        isSaveScheduled = true
+        queue.asyncAfter(deadline: .now() + .milliseconds(250)) { [weak self] in
+            self?.flush()
+        }
+    }
+
+    private func flush() {
+        backgroundContext.perform { [weak self] in
+            guard let self = self else { return }
+            if self.isSaveScheduled, Files.fileExists(atPath: self.url.path) {
+                self.saveAndReset()
+                self.isSaveScheduled = false
+            }
+        }
+    }
+
+    private func saveAndReset() {
+        do {
+            try backgroundContext.save()
+        } catch {
+            debugPrint(error)
+        }
+        backgroundContext.reset()
+    }
+
+    private func _handle(_ event: Event) {
+        switch event {
+        case .movieStored(let event): process(event)
+        }
+    }
+
+    private func process(_ event: Event.MovieCreated) {
+        let message = MovieEntity(context: backgroundContext)
+        message.id = event.id
+        message.title = event.title
+        message.descriptions = event.descriptions
+        message.rating = event.rating
+        message.duration = event.duration
+        message.genre = event.genre.joined(separator: ", ")
+        message.releaseDate = event.releaseDate
+        message.trailerURL = event.trailerURL
     }
 }
 

@@ -15,28 +15,22 @@ extension Store {
         typealias Relationship = NSRelationshipDescription
 
         let movie = Entity(class: MovieEntity.self)
-        let movieDetails = Entity(class: MovieDetailsEntity.self)
 
         movie.properties = [
-            Attribute(name: "id", type: .UUIDAttributeType),
-            Attribute(name: "createdAt", type: .dateAttributeType),
-            Attribute(name: "title", type: .stringAttributeType),
-            Attribute(name: "duration", type: .integer16AttributeType),
-            Relationship(name: "movieDetails", type: .oneToOne(isOptional: true), entity: movieDetails)
-        ]
-
-        movieDetails.properties = [
-            Attribute(name: "id", type: .UUIDAttributeType),
-            Attribute(name: "createdAt", type: .dateAttributeType),
-            Attribute(name: "isWatchedList", type: .booleanAttributeType),
+            Attribute(name: "id", type: .stringAttributeType),
             Attribute(name: "title", type: .stringAttributeType),
             Attribute(name: "descriptions", type: .stringAttributeType),
+            Attribute(name: "rating", type: .doubleAttributeType),
+            Attribute(name: "duration", type: .integer64AttributeType),
             Attribute(name: "genre", type: .stringAttributeType),
             Attribute(name: "releaseDate", type: .dateAttributeType),
+            Attribute(name: "trailerURL", type: .stringAttributeType),
         ]
 
+//        Attribute(name: "isWatchedList", type: .booleanAttributeType),
+
         let model = NSManagedObjectModel()
-        model.entities = [movie, movieDetails]
+        model.entities = [movie]
         return model
     }()
 }
