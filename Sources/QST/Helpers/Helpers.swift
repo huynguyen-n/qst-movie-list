@@ -47,3 +47,10 @@ extension URL {
         return url
     }
 }
+
+public extension Int {
+    var durationToString: String {
+        let time = (hours: self / 60, mins: (self % 60))
+        return "\(time.hours)h \(time.mins)min"
+    }
+}

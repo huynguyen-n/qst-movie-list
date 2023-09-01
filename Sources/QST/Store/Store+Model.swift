@@ -20,6 +20,7 @@ extension Store {
             Attribute(name: "id", type: .stringAttributeType),
             Attribute(name: "title", type: .stringAttributeType),
             Attribute(name: "descriptions", type: .stringAttributeType),
+            Attribute(name: "thumbnail", type: .stringAttributeType),
             Attribute(name: "rating", type: .doubleAttributeType),
             Attribute(name: "duration", type: .integer64AttributeType),
             Attribute(name: "genre", type: .stringAttributeType),

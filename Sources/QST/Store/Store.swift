@@ -70,19 +70,29 @@ public final class Store: @unchecked Sendable, Identifiable {
     }
 }
 
+// MARK: - Store (Accessing Movies)
+
+extension Store {
+    /// Returns all recorded movies, least recent messages come first.
+    public func allMovies() throws -> [MovieEntity] {
+        try viewContext.fetch(MovieEntity.self)
+    }
+}
+
 // MARK: - Store (Storing Movie)
 extension Store {
     /// Stores the given movie
-    public func storeMovie(id: String, title: String, descriptions: String, rating: Double, duration: Int, genre: [String], releaseDate: Date, trailerURL: String) {
+    public func storeMovie(_ movie: Event.MovieCreated) {
         handle(.movieStored(.init(
-            id: id,
-            title: title,
-            descriptions: descriptions,
-            rating: rating,
-            duration: duration,
-            genre: genre,
-            releaseDate: Date(),
-            trailerURL: trailerURL)))
+            id: movie.id,
+            title: movie.title,
+            descriptions: movie.descriptions,
+            thumbnail: movie.thumbnail,
+            rating: movie.rating,
+            duration: movie.duration,
+            genre: movie.genre,
+            releaseDate: movie.releaseDate,
+            trailerURL: movie.trailerURL)))
     }
 
     /// Handles event created by the current store and dispatches it to observers.
@@ -151,15 +161,17 @@ private extension Store {
     }
 
     private func process(_ event: Event.MovieCreated) {
-        let message = MovieEntity(context: backgroundContext)
-        message.id = event.id
-        message.title = event.title
-        message.descriptions = event.descriptions
-        message.rating = event.rating
-        message.duration = event.duration
-        message.genre = event.genre.joined(separator: ", ")
-        message.releaseDate = event.releaseDate
-        message.trailerURL = event.trailerURL
+        let movie = MovieEntity(context: backgroundContext)
+        movie.id = event.id
+        movie.title = event.title
+        movie.descriptions = event.descriptions
+        movie.descriptions = event.descriptions
+        movie.thumbnail = event.thumbnail
+        movie.rating = event.rating
+        movie.duration = event.duration
+        movie.genre = event.genre.joined(separator: ", ")
+        movie.releaseDate = event.releaseDate
+        movie.trailerURL = event.trailerURL
     }
 }
 

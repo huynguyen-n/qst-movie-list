@@ -40,14 +40,6 @@ final class MovieListViewModel: ObservableObject {
 
         self.movies = .movies(for: store.viewContext)
 
-        $entities.sink { [weak self] in
-            print($0)
-        }.store(in: &cancellables)
-
-//        movies.$objects.dropFirst().sink { [weak self] in
-//            self?.refreshPreviousSessionButton(sessions: $0)
-//        }.store(in: &cancellables)
-
         environment.$listOptions.dropFirst().sink { [weak self] in
             self?.resetDataSource(options: $0)
         }.store(in: &cancellables)
@@ -56,9 +48,7 @@ final class MovieListViewModel: ObservableObject {
     private func resetDataSource(options: MovieListOptions) {
         dataSource = MovieListDataSource(store: store, options: options)
         dataSource?.delegate = self
-//        filtersCancellable = filters.$options.sink { [weak self] in
         dataSource?.predicate = .init()
-//        }
     }
 }
 

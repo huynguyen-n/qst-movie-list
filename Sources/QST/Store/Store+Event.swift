@@ -16,16 +16,18 @@ extension Store {
             public var id: String
             public var title: String
             public var descriptions: String
+            public var thumbnail: String
             public var rating: Double
             public var duration: Int
             public var genre: [String]
             public var releaseDate: Date
             public var trailerURL: String
 
-            public init(id: String, title: String, descriptions: String, rating: Double, duration: Int, genre: [String], releaseDate: Date, trailerURL: String) {
+            public init(id: String, title: String, descriptions: String, thumbnail: String, rating: Double, duration: Int, genre: [String], releaseDate: Date, trailerURL: String) {
                 self.id = id
                 self.title = title
                 self.descriptions = descriptions
+                self.thumbnail = thumbnail
                 self.rating = rating
                 self.duration = duration
                 self.genre = genre
@@ -38,6 +40,7 @@ extension Store {
                 self.title = entity.title
                 self.duration = entity.duration
                 self.descriptions = entity.descriptions
+                self.thumbnail = entity.thumbnail
                 self.rating = entity.rating
                 self.genre = entity.genre.components(separatedBy: ", ")
                 self.releaseDate = entity.releaseDate

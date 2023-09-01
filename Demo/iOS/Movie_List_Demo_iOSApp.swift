@@ -12,7 +12,9 @@ import QSTUI
 struct Movie_List_Demo_iOSApp: App {
     var body: some Scene {
         WindowGroup {
-            MovieView(store: .mock)
+            NavigationView {
+                MovieView(store: .mock)
+            }
         }
     }
 }
