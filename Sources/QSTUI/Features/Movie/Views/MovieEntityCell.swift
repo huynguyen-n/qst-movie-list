@@ -14,18 +14,19 @@ struct MovieEntityCell: View {
     let entity: NSManagedObject
 
     var body: some View {
-        _MovieCell(entityCell: EntityCell(entity))
+        switch EntityCell(entity) {
+        case let .movie(entity): _MovieCell(movie: entity)
+        }
     }
 }
 
 private struct _MovieCell: View {
-    let entityCell: EntityCell
+    let movie: MovieEntity
 
     var body: some View {
-        switch entityCell {
-        case .movie(let movieEntity):
-            return MovieCell(movie: movieEntity)
-        }
+        let cell = MovieCell(movie: movie)
+            .background(NavigationLink("", destination: MovieDetailsView(movie: movie)).opacity(0))
+        cell
     }
 }
 
@@ -33,8 +34,8 @@ enum EntityCell {
     case movie(MovieEntity)
 
     init(_ entity: NSManagedObject) {
-        if let movieEntity = entity as? MovieEntity {
-            self = .movie(movieEntity)
+        if let movie = entity as? MovieEntity {
+            self = .movie(movie)
         } else {
             fatalError("Unsupported entity: \(entity)")
         }

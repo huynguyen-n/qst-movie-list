@@ -23,12 +23,7 @@ struct MovieCell: View {
     @ViewBuilder
     private var content: some View {
         HStack(spacing: 8) {
-            Image(movie.thumbnail)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 96)
-                .cornerRadius(4)
-                .shadow(radius: 8.0)
+            ThumbnailImage(imageNamed: movie.thumbnail, size: .list)
             text.dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
         .padding(.bottom)
@@ -62,24 +57,9 @@ private extension Date {
 }
 
 #if DEBUG
-@available(iOS 15, *)
 struct MovieCell_Previews: PreviewProvider {
-    static var mockMovieEntity: MovieEntity {
-        let context = try! Store.preview.container.viewContext
-        let entity = MovieEntity(context: context)
-        entity.title = "Tenet"
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyymmdd"
-        if let date = formatter.date(from: "20230203") {
-            entity.releaseDate = date
-        }
-        entity.duration = 157
-        entity.genre = "Action, Animation, Adventure"
-        return entity
-    }
-
     static var previews: some View {
-        MovieCell(movie: mockMovieEntity)
+        MovieCell(movie: Store.mock.makeMockMovie())
             .injecting(MovieListEnvironment(store: .mock))
             .padding()
             .previewLayout(.sizeThatFits)

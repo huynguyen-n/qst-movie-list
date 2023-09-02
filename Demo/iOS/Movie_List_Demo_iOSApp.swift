@@ -15,6 +15,7 @@ struct Movie_List_Demo_iOSApp: App {
             NavigationView {
                 MovieView(store: .mock)
             }
+            .accentColor(.black)
         }
     }
 }

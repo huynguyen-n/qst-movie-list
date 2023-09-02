@@ -27,6 +27,24 @@ public extension Store {
     func populate() {
         _syncPopulateStore(self)
     }
+
+    func makeMockMovie() -> MovieEntity {
+        guard let movie = try? loadJson()?.first else {
+            fatalError("Can not load JSON")
+        }
+        let entity = MovieEntity(context: viewContext)
+        entity.id = movie.id
+        entity.title = movie.title
+        entity.descriptions = movie.descriptions
+        entity.descriptions = movie.descriptions
+        entity.thumbnail = movie.thumbnail
+        entity.rating = movie.rating
+        entity.duration = movie.duration
+        entity.genre = movie.genre.joined(separator: ", ")
+        entity.releaseDate = movie.releaseDate
+        entity.trailerURL = movie.trailerURL
+        return entity
+    }
 }
 
 private func makeMockStore() -> Store {
@@ -37,10 +55,8 @@ private func makeMockStore() -> Store {
 }
 
 private func _syncPopulateStore(_ store: Store) {
-    guard let movies = try? loadJson(fileName: "movies") else {
-        return
-    }
-    movies.forEach { store.storeMovie($0) } 
+    let movies = try? loadJson()
+    movies?.forEach { store.storeMovie($0) }
 }
 
 enum LoadJSONError: Error {
@@ -51,8 +67,8 @@ enum LoadJSONError: Error {
 
 private typealias Movie = Store.Event.MovieCreated
 
-private func loadJson(fileName: String) throws -> [Movie]? {
-    guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else {
+private func loadJson() throws -> [Movie]? {
+    guard let url = Bundle.main.url(forResource: "movies", withExtension: "json") else {
         throw LoadJSONError.fileNotFound
     }
 
@@ -62,7 +78,6 @@ private func loadJson(fileName: String) throws -> [Movie]? {
 
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .formatted(.customDateFormatter)
-    
     guard let movies = try? decoder.decode([Movie].self, from: data) else {
         throw LoadJSONError.decodeFailure
     }
