@@ -54,7 +54,7 @@ struct _Header: View {
             ThumbnailImage(imageNamed: movie.thumbnail, size: .details)
             VStack(alignment: .leading) {
                 titleRatingText
-                _HeaderButtons()
+                _HeaderButtons(movie: movie)
             }
         }
         .padding(.bottom)
@@ -84,6 +84,8 @@ struct _Header: View {
 }
 
 struct _HeaderButtons: View {
+    let movie: MovieEntity
+    @State private var isWachedList: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24.0) {
@@ -94,11 +96,13 @@ struct _HeaderButtons: View {
 
     private var addedToWatchListButton: some View {
         Button {
-            print("add to watch list")
+            Store.mock.toggleWatchedList(for: movie)
         } label: {
-            Text("+ add to watch list".uppercased())
+            Text((isWachedList ? "remove from watchlist" : "+ add to watch list").uppercased())
+                .fixedSize(horizontal: true, vertical: false)
                 .font(MovieDetailsConstants.fontSubHeadline.weight(.bold))
                 .padding(12.0)
+                .onReceive(movie.publisher(for: \.isWatchedList)) { isWachedList = $0 }
         }
         .foregroundColor(.gray)
         .background(Color(.lightGray).brightness(0.2))

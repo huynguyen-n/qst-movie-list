@@ -10,19 +10,14 @@ import QST
 
 private let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent("qst-demo")
 
-private let cleanup: Void = {
-    try? FileManager.default.removeItem(at: rootURL)
-    try! FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: true, attributes: nil)
-}()
-
 public extension Store {
     static let mock: Store = {
-        let store = makeMockStore()
+        let store = try! Store(storeURL: rootURL)
         _syncPopulateStore(store)
         return store
     }()
 
-    static let preview = makeMockStore()
+    static let preview = try! Store(storeURL: rootURL)
 
     func populate() {
         _syncPopulateStore(self)
@@ -47,14 +42,10 @@ public extension Store {
     }
 }
 
-private func makeMockStore() -> Store {
-    _ = cleanup
-
-    let storeURL = rootURL.appendingPathComponent("\(UUID().uuidString).qst")
-    return try! Store(storeURL: storeURL)
-}
-
 private func _syncPopulateStore(_ store: Store) {
+    guard (try? store.allMovies())?.isEmpty == true else {
+        return
+    }
     let movies = try? loadJson()
     movies?.forEach { store.storeMovie($0) }
 }

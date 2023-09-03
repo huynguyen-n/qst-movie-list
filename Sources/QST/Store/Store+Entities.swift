@@ -17,4 +17,5 @@ public final class MovieEntity: NSManagedObject {
     @NSManaged public var genre: String
     @NSManaged public var releaseDate: Date
     @NSManaged public var trailerURL: String
+    @NSManaged public var isWatchedList: Bool
 }

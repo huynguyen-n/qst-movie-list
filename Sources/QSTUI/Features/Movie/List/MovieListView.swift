@@ -38,15 +38,7 @@ private struct _InternalMovieListView: View {
             .onDisappear { listViewModel.value.isViewVisible = false }
     }
 
-    @ViewBuilder private var contents: some View {
-        _MovieListView()
-    }
-}
-
-private struct _MovieListView: View {
-    @Environment(\.store) private var store
-
-    var body: some View {
+    private var contents: some View {
         List {
             MovieListContentView()
         }

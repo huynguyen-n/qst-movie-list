@@ -77,6 +77,13 @@ extension Store {
     public func allMovies() throws -> [MovieEntity] {
         try viewContext.fetch(MovieEntity.self)
     }
+
+    public func toggleWatchedList(for movie: MovieEntity) {
+        perform {
+            guard let _movie = $0.object(with: movie.objectID) as? MovieEntity else { return }
+            _movie.isWatchedList.toggle()
+        }
+    }
 }
 
 // MARK: - Store (Storing Movie)
@@ -172,6 +179,7 @@ private extension Store {
         movie.genre = event.genre.joined(separator: ", ")
         movie.releaseDate = event.releaseDate
         movie.trailerURL = event.trailerURL
+        movie.isWatchedList = false
     }
 }
 

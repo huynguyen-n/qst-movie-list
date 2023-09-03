@@ -26,9 +26,8 @@ extension Store {
             Attribute(name: "genre", type: .stringAttributeType),
             Attribute(name: "releaseDate", type: .dateAttributeType),
             Attribute(name: "trailerURL", type: .stringAttributeType),
+            Attribute(name: "isWatchedList", type: .booleanAttributeType),
         ]
-
-//        Attribute(name: "isWatchedList", type: .booleanAttributeType),
 
         let model = NSManagedObjectModel()
         model.entities = [movie]

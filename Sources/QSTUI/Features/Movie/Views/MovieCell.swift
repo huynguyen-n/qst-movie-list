@@ -11,6 +11,7 @@ import QST
 struct MovieCell: View {
 
     let movie: MovieEntity
+    @State private var isWatchedList = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -36,6 +37,9 @@ struct MovieCell: View {
                 .font(MovieCellConstants.fontTitle.weight(.bold))
             Text(descriptions)
                 .font(MovieCellConstants.fontInfo.weight(.thin))
+            _OnMyWatchListLabel(isWachedList: isWatchedList)
+                .padding(.top, 24.0)
+                .onReceive(movie.publisher(for: \.isWatchedList)) { isWatchedList = $0 }
         }
     }
 
@@ -45,6 +49,23 @@ struct MovieCell: View {
 
     private var descriptions: String {
         [movie.duration.durationToString, movie.genre].joined(separator: " - ")
+    }
+}
+
+struct _OnMyWatchListLabel: View {
+    let isWachedList: Bool
+
+    var body: some View {
+        if isWachedList {
+            Text("on my watch list".uppercased())
+                .font(MovieDetailsConstants.fontSubHeadline.weight(.bold))
+                .padding(8.0)
+                .foregroundColor(.gray)
+                .background(Color(.lightGray).brightness(0.3))
+                .clipShape(Capsule())
+        } else {
+            EmptyView()
+        }
     }
 }
 
