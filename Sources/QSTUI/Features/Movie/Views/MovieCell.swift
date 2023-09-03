@@ -58,8 +58,9 @@ struct _OnMyWatchListLabel: View {
     var body: some View {
         if isWachedList {
             Text("on my watch list".uppercased())
-                .font(MovieDetailsConstants.fontSubHeadline.weight(.bold))
-                .padding(8.0)
+                .font(MovieDetailsConstants.fontCaption.weight(.bold))
+                .padding(.vertical, 8.0)
+                .padding(.horizontal, 12.0)
                 .foregroundColor(.gray)
                 .background(Color(.lightGray).brightness(0.3))
                 .clipShape(Capsule())

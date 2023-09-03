@@ -18,12 +18,15 @@ struct MovieDetailsView: View {
     }
 
     private var contents: some View {
-        VStack {
-            _Header(movie: movie)
-            shortDescription
-            _Details(movie: movie)
+        ScrollView {
+            VStack {
+                _Header(movie: movie)
+                shortDescription
+                _Details(movie: movie)
+            }
+            .padding()
         }
-        .padding()
+        .scrollIndicators(.never)
     }
 
     private var shortDescription: some View {
@@ -36,6 +39,7 @@ struct MovieDetailsView: View {
                     .font(MovieDetailsConstants.fontBody.weight(.regular))
                     .foregroundColor(Color(.lightGray))
                     .padding(.bottom)
+                    .fixedSize(horizontal: false, vertical: true)
                 Divider()
                     .padding(.bottom)
             }
@@ -86,6 +90,7 @@ struct _Header: View {
 struct _HeaderButtons: View {
     let movie: MovieEntity
     @State private var isWachedList: Bool = false
+    @Environment(\.openURL) var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24.0) {
@@ -99,9 +104,9 @@ struct _HeaderButtons: View {
             Store.mock.toggleWatchedList(for: movie)
         } label: {
             Text((isWachedList ? "remove from watchlist" : "+ add to watch list").uppercased())
-                .fixedSize(horizontal: true, vertical: false)
-                .font(MovieDetailsConstants.fontSubHeadline.weight(.bold))
-                .padding(12.0)
+                .font(MovieDetailsConstants.fontCaption.weight(.bold))
+                .padding(.vertical, 8.0)
+                .padding(.horizontal, 12.0)
                 .onReceive(movie.publisher(for: \.isWatchedList)) { isWachedList = $0 }
         }
         .foregroundColor(.gray)
@@ -111,11 +116,12 @@ struct _HeaderButtons: View {
 
     private var watchTrailerButton: some View {
         Button {
-            print("watch trailer")
+            openURL(URL(string: movie.trailerURL)!)
         } label: {
             Text("watch trailler".uppercased())
-                .font(MovieDetailsConstants.fontSubHeadline.weight(.bold))
-                .padding(8.0)
+                .font(MovieDetailsConstants.fontCaption.weight(.bold))
+                .padding(.vertical, 4.0)
+                .padding(.horizontal, 12.0)
         }
         .foregroundColor(.black)
         .overlay(Capsule().stroke(lineWidth: 1.5))
@@ -137,10 +143,16 @@ struct _Details: View {
         }
     }
 
+    static let releaseDateFormat: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd MMM yyyy"
+            return formatter
+        }()
+
     private var detailsValues: [[Details: String]] {
         [
             [.genre: movie.genre,],
-            [.releasedDate: movie.releaseDate.formatted()]
+            [.releasedDate: movie.releaseDate.formatted(.dateTime.day().month().year())]
         ]
     }
 
@@ -151,13 +163,14 @@ struct _Details: View {
                 .padding(.bottom)
             VStack(alignment: .trailing) {
                 ForEach(detailsValues, id:\.self) { item in
-                    HStack {
+                    HStack(alignment: .top) {
                         Text(item.keys.first?.value ?? "")
                             .font(MovieDetailsConstants.fontBody.weight(.regular))
                             .frame(maxWidth: 120, alignment: .trailing)
                         Text(item.values.first ?? "")
                             .font(MovieDetailsConstants.fontBody.weight(.regular))
                             .foregroundColor(Color(.lightGray))
+                            .fixedSize(horizontal: false, vertical: true)
                         Spacer()
                     }
                 }
@@ -179,7 +192,7 @@ struct MovieDetailsConstants {
 #if os(iOS)
     static let fontTitle2 = Font.title2.monospacedDigit()
     static let fontTitle = Font.title.monospacedDigit()
-    static let fontSubHeadline = Font.subheadline.monospacedDigit()
+    static let fontCaption = Font.caption.monospacedDigit()
     static let fontBody = Font.body.monospacedDigit()
 #endif
 }

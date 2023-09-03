@@ -25,6 +25,9 @@ public final class Store: @unchecked Sendable, Identifiable {
     /// Returns the view context for accessing entities on the main thread.
     public var viewContext: NSManagedObjectContext { container.viewContext }
 
+    /// Returns `true` if the store was opened with a QST archive. The archives are readonly.
+    public let isArchive: Bool
+
     // MARK: - Shared
 
     /// Returns a shared store.
@@ -46,7 +49,7 @@ public final class Store: @unchecked Sendable, Identifiable {
     public init(storeURL: URL) throws {
         var isDirectory: ObjCBool = ObjCBool(false)
         let fileExists = Files.fileExists(atPath: storeURL.path, isDirectory: &isDirectory)
-        let isArchive = fileExists && !isDirectory.boolValue
+        self.isArchive = fileExists && !isDirectory.boolValue
         self.url = storeURL
 
         if !isArchive {
@@ -67,6 +70,7 @@ public final class Store: @unchecked Sendable, Identifiable {
         self.databaseURL = storeURL.appending(directory: databaseFilename)
         self.container = .inMemoryReadonlyContainer
         self.backgroundContext = container.newBackgroundContext()
+        self.isArchive = true
     }
 }
 
@@ -83,6 +87,15 @@ extension Store {
             guard let _movie = $0.object(with: movie.objectID) as? MovieEntity else { return }
             _movie.isWatchedList.toggle()
         }
+    }
+
+    /// Removes all of the previously recorded messages.
+    public func removeAll() {
+        perform { _ in self._removeAll() }
+    }
+
+    private func _removeAll() {
+        try? deleteEntities(for: MovieEntity.fetchRequest())
     }
 }
 
@@ -117,6 +130,20 @@ extension Store {
 
 // MARK: - Private Extension
 private extension Store {
+    private func deleteEntities(for fetchRequest: NSFetchRequest<NSFetchRequestResult>) throws {
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        deleteRequest.resultType = .resultTypeObjectIDs
+
+        let result = try backgroundContext.execute(deleteRequest) as? NSBatchDeleteResult
+        guard let ids = result?.result as? [NSManagedObjectID] else { return }
+
+        NSManagedObjectContext.mergeChanges(fromRemoteContextSave: [NSDeletedObjectsKey: ids], into: [backgroundContext])
+
+        viewContext.perform {
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: [NSDeletedObjectsKey: ids], into: [self.viewContext])
+        }
+    }
+
     static func makeContainer(databaseURL: URL) -> NSPersistentContainer {
         let container = NSPersistentContainer(name: databaseURL.lastPathComponent, managedObjectModel: Self.model)
         let store = NSPersistentStoreDescription(url: databaseURL)

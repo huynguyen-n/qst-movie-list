@@ -26,19 +26,9 @@ public struct MovieView: View {
             .navigationTitle(environment.title)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-//                    trailingNavigationBarItems
+                    MovieContextMenu()
                 }
             }
             .injecting(environment)
     }
-
-//    @ViewBuilder private var trailingNavigationBarItems: some View {
-//        Button(action: { environment.router.isShowingShareStore = true }) {
-//            Label("Share", systemImage: "square.and.arrow.up")
-//        }
-//        Button(action: { environment.router.isShowingFilters = true }) {
-//            Image(systemName: "line.horizontal.3.decrease.circle")
-//        }
-//        ContextMenu()
-//    }
 }
