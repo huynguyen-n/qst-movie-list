@@ -26,6 +26,10 @@ extension NSManagedObjectContext {
             configure($0)
         }.first
     }
+
+    func count<T: NSManagedObject>(for entity: T.Type) throws -> Int {
+        try count(for: NSFetchRequest<T>(entityName: String(describing: entity)))
+    }
 }
 
 extension NSPersistentContainer {

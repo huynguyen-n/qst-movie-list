@@ -16,6 +16,9 @@ public final class Store: @unchecked Sendable, Identifiable {
     /// The URL the store was initialized with.
     public let url: URL
 
+    /// The options with which the store was opened with.
+    public let options: Options
+
     /// Returns the Core Data container associated with the store.
     public let container: NSPersistentContainer
 
@@ -46,11 +49,15 @@ public final class Store: @unchecked Sendable, Identifiable {
     private let queue = DispatchQueue(label: "com.qst.movie.store")
     private let databaseURL: URL
 
-    public init(storeURL: URL) throws {
+    public init(storeURL: URL, options: Options = []) throws {
         var isDirectory: ObjCBool = ObjCBool(false)
         let fileExists = Files.fileExists(atPath: storeURL.path, isDirectory: &isDirectory)
+        guard fileExists || options.contains(.create) else {
+            throw Store.Error.fileDoesntExist
+        }
         self.isArchive = fileExists && !isDirectory.boolValue
         self.url = storeURL
+        self.options = options
 
         if !isArchive {
             self.databaseURL = storeURL.appending(filename: databaseFilename)
@@ -71,6 +78,7 @@ public final class Store: @unchecked Sendable, Identifiable {
         self.container = .inMemoryReadonlyContainer
         self.backgroundContext = container.newBackgroundContext()
         self.isArchive = true
+        self.options = []
     }
 }
 
@@ -97,6 +105,26 @@ extension Store {
     private func _removeAll() {
         try? deleteEntities(for: MovieEntity.fetchRequest())
     }
+
+    /// Safely closes the database and removes all information from the store.
+    ///
+    /// - note: After the store is destroyed, you can't write any new messages to it.
+    public func destroy() throws {
+        let coordinator = container.persistentStoreCoordinator
+        for store in coordinator.persistentStores {
+            if let storeURL = store.url {
+                try coordinator.destroyPersistentStore(at: storeURL, ofType: NSSQLiteStoreType, options: [:])
+            }
+        }
+        try Files.removeItem(at: url)
+    }
+
+    /// Safely closes the database.
+    public func close() throws {
+        for store in container.persistentStoreCoordinator.persistentStores {
+            try container.persistentStoreCoordinator.remove(store)
+        }
+    }
 }
 
 // MARK: - Store (Storing Movie)
@@ -120,11 +148,6 @@ extension Store {
         perform { _ in
             self._handle(event)
         }
-    }
-
-    /// Handles event emitted by the external store.
-    func handleExternalEvent(_ event: Event) {
-        perform { _ in self._handle(event) }
     }
 }
 
@@ -155,9 +178,18 @@ private extension Store {
     // MARK: Performing Changes
 
     private func perform(_ changes: @escaping (NSManagedObjectContext) -> Void) {
-        backgroundContext.perform {
-            changes(self.backgroundContext)
-            self.setNeedsSave()
+        guard !isArchive else { return }
+
+        if options.contains(.synchronous) {
+            backgroundContext.performAndWait {
+                changes(backgroundContext)
+                self.saveAndReset()
+            }
+        } else {
+            backgroundContext.perform {
+                changes(self.backgroundContext)
+                self.setNeedsSave()
+            }
         }
     }
 
@@ -207,6 +239,26 @@ private extension Store {
         movie.releaseDate = event.releaseDate
         movie.trailerURL = event.trailerURL
         movie.isWatchedList = false
+    }
+}
+
+// MARK: - Store (Error)
+
+extension Store {
+    public enum Error: Swift.Error, LocalizedError {
+        case fileDoesntExist
+        case storeInvalid
+        case fileAlreadyExists
+        case unknownError
+
+        public var errorDescription: String? {
+            switch self {
+            case .fileDoesntExist: return "File doesn't exist"
+            case .storeInvalid: return "Store format is invalid"
+            case .fileAlreadyExists: return "The file at the given location already exists"
+            case .unknownError: return "Unexpected error"
+            }
+        }
     }
 }
 

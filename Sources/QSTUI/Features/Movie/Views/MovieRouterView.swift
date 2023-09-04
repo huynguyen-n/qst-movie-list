@@ -10,10 +10,6 @@ import CoreData
 
 final class MovieListRouter: ObservableObject {
     @Published var isShowingFilters = false
-    @Published var isShowingSettings = false
-    @Published var isShowingSessions = false
-    @Published var isShowingStoreInfo = false
-    @Published var isShowingShareStore = false
 }
 
 struct MovieListRouterView: View {
@@ -34,13 +30,6 @@ extension MovieListRouterView {
     }
 
     private var destinationFilters: some View {
-        NavigationView {
-//            FiltersView()
-//                .inlineNavigationTitle("Filters")
-//                .navigationBarItems(trailing: Button("Done") {
-//                    router.isShowingFilters = false
-//                })
-//                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        }
+        NavigationView { }
     }
 }

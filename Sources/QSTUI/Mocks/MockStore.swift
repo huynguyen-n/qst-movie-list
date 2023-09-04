@@ -49,39 +49,3 @@ private func _syncPopulateStore(_ store: Store) {
     let movies = try? loadJson()
     movies?.forEach { store.storeMovie($0) }
 }
-
-enum LoadJSONError: Error {
-    case fileNotFound
-    case readDataFailure
-    case decodeFailure
-}
-
-private typealias Movie = Store.Event.MovieCreated
-
-private func loadJson() throws -> [Movie]? {
-    guard let url = Bundle.main.url(forResource: "movies", withExtension: "json") else {
-        throw LoadJSONError.fileNotFound
-    }
-
-    guard let data = try? Data(contentsOf: url) else {
-        throw LoadJSONError.readDataFailure
-    }
-
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .formatted(.customDateFormatter)
-    guard let movies = try? decoder.decode([Movie].self, from: data) else {
-        throw LoadJSONError.decodeFailure
-    }
-
-    return movies
-}
-
-private extension DateFormatter {
-    static let customDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-mm-dd"
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
-}
