@@ -107,7 +107,7 @@ final class StoreTests: StoreBaseTests {
         // WHEN
         store.removeAll()
 
-        // THEN both message and metadata are removed
+        // THEN both movie and metadata are removed
         XCTAssertEqual(try context.count(for: MovieEntity.self), 0)
     }
 }

@@ -1,13 +1,16 @@
 # ``QSTUI``
 
-<!--@START_MENU_TOKEN@-->Summary<!--@END_MENU_TOKEN@-->
+A set of components that you can integrate into your app to view the movie list.
 
 ## Overview
 
-<!--@START_MENU_TOKEN@-->Text<!--@END_MENU_TOKEN@-->
+The easiest way to integrate QSTUI is by using ``MovieView``.
 
-## Topics
-
-### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
-
-- <!--@START_MENU_TOKEN@-->``Symbol``<!--@END_MENU_TOKEN@-->
+```swift
+// Present modally
+Text("Movies").sheet(isPresented: $isMoviePresented) {
+    NavigationView {
+        MovieView()
+    }
+}
+```

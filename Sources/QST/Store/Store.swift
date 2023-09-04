@@ -85,7 +85,7 @@ public final class Store: @unchecked Sendable, Identifiable {
 // MARK: - Store (Accessing Movies)
 
 extension Store {
-    /// Returns all recorded movies, least recent messages come first.
+    /// Returns all recorded movies, least recent movies come first.
     public func allMovies() throws -> [MovieEntity] {
         try viewContext.fetch(MovieEntity.self)
     }
@@ -97,7 +97,7 @@ extension Store {
         }
     }
 
-    /// Removes all of the previously recorded messages.
+    /// Removes all of the previously recorded movies.
     public func removeAll() {
         perform { _ in self._removeAll() }
     }
@@ -108,7 +108,7 @@ extension Store {
 
     /// Safely closes the database and removes all information from the store.
     ///
-    /// - note: After the store is destroyed, you can't write any new messages to it.
+    /// - note: After the store is destroyed, you can't write any new movies to it.
     public func destroy() throws {
         let coordinator = container.persistentStoreCoordinator
         for store in coordinator.persistentStores {
