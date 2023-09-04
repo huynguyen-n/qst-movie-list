@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
-import QST
+import QSTUI
 
 @main
 struct Movie_List_Demo_iOSApp: App {
     var body: some Scene {
         WindowGroup {
-            // implement UI from QSTUI
+            NavigationView {
+                MovieView(store: .mock)
+            }
+            .accentColor(.black)
         }
     }
 }
